@@ -92,13 +92,13 @@ func parseTimeDifference(timeDifference int) string {
 }
 
 // Calculate the total distance of the track
-func calculateTotalDistance(track igc.Track) string {
+func calculateTotalDistance(trackPoints []igc.Point) string {
 
 	totalDistance := 0.0
 
 	// For each point of the track, calculate the distance between 2 points in the Point array
-	for i := 0; i < len(track.Points)-1; i++ {
-		totalDistance += track.Points[i].Distance(track.Points[i+1])
+	for i := 0; i < len(trackPoints)-1; i++ {
+		totalDistance += trackPoints[i].Distance(trackPoints[i+1])
 	}
 
 	// Parse it to a string value

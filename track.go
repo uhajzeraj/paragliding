@@ -14,10 +14,14 @@ import (
 
 // URLTrack - Keep track of the url used for adding the igc file
 type igcTrack struct {
-	trackURL     string
-	trackName    string
-	track        igc.Track
-	timeRecorded time.Time
+	trackURL        string
+	trackName       string
+	timeRecorded    time.Time
+	trackDate       time.Time
+	trackPilot      string
+	trackGliderType string
+	trackGliderID   string
+	trackPoints     []igc.Point
 }
 
 var igcTrackCount = 1 // Keep count of the number of igc files added to the system
@@ -52,8 +56,9 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 		// Check if track slice contains the url
 		// Or if the slice is empty
 		if !urlInSlice(data["url"]) || len(igcTracks) == 0 {
-			igcTracks = append(igcTracks, igcTrack{data["url"], "igc" + strconv.Itoa(igcTrackCount), track, t}) // Append the result to igcTracks slice
-			igcTrackCount++                                                                                     // Increase the count
+			igcTracks = append(igcTracks, // Append the result to igcTracks slice
+				igcTrack{data["url"], "igc" + strconv.Itoa(igcTrackCount), t, track.Date, track.Pilot, track.GliderType, track.GliderID, track.Points})
+			igcTrackCount++ // Increase the count
 		}
 
 		// Find the id of the track in igcTracks slice
@@ -100,11 +105,11 @@ func apiIgcIDHandler(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 
 			response := `{`
-			response += `"H_date": "` + igcTracks[igcTracksIndex].track.Date.String() + `",`
-			response += `"pilot": "` + igcTracks[igcTracksIndex].track.Pilot + `",`
-			response += `"glider": "` + igcTracks[igcTracksIndex].track.GliderType + `",`
-			response += `"glider_id": "` + igcTracks[igcTracksIndex].track.GliderID + `",`
-			response += `"track_length": "` + calculateTotalDistance(igcTracks[igcTracksIndex].track) + `",`
+			response += `"H_date": "` + igcTracks[igcTracksIndex].trackDate.String() + `",`
+			response += `"pilot": "` + igcTracks[igcTracksIndex].trackPilot + `",`
+			response += `"glider": "` + igcTracks[igcTracksIndex].trackGliderType + `",`
+			response += `"glider_id": "` + igcTracks[igcTracksIndex].trackGliderID + `",`
+			response += `"track_length": "` + calculateTotalDistance(igcTracks[igcTracksIndex].trackPoints) + `",`
 			response += `"track_src_url": "` + igcTracks[igcTracksIndex].trackURL + `"`
 			response += `}`
 
@@ -131,11 +136,11 @@ func apiIgcIDFieldHandler(w http.ResponseWriter, r *http.Request) {
 		if igcTracksIndex != -1 { // Check whether the url is different from an empty string
 
 			something := map[string]string{ // Map the field to one of the Track struct attributes in the igcFiles slice
-				"pilot":         igcTracks[igcTracksIndex].track.Pilot,
-				"glider":        igcTracks[igcTracksIndex].track.GliderType,
-				"glider_id":     igcTracks[igcTracksIndex].track.GliderID,
-				"track_length":  calculateTotalDistance(igcTracks[igcTracksIndex].track),
-				"H_date":        igcTracks[igcTracksIndex].track.Date.String(),
+				"pilot":         igcTracks[igcTracksIndex].trackPilot,
+				"glider":        igcTracks[igcTracksIndex].trackGliderType,
+				"glider_id":     igcTracks[igcTracksIndex].trackGliderID,
+				"track_length":  calculateTotalDistance(igcTracks[igcTracksIndex].trackPoints),
+				"H_date":        igcTracks[igcTracksIndex].trackDate.String(),
 				"track_src_url": igcTracks[igcTracksIndex].trackURL,
 			}
 
