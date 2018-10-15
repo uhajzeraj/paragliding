@@ -302,7 +302,7 @@ func urlRouter(w http.ResponseWriter, r *http.Request) {
 		"^/paragliding/api/track/igc[0-9]{1,10}$": apiIgcIDHandler,
 		"^/paragliding/api/track/igc[0-9]{1,10}/(pilot|glider|glider_id|track_length|H_date|track_src_url)$": apiIgcIDFieldHandler,
 		"^/paragliding/api/ticker/latest$": apiTickerLatestHandler,
-		"^/"
+		// "^/"
 	}
 
 	result := regexMatches(r.URL.Path, urlMap) // Perform the RegEx check to see if any pattern matches
@@ -315,13 +315,6 @@ func urlRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
-	// for i := 0; i < 10000; i++ {
-	// 	t := time.Now().Format("02.01.2006 15:04:05.000")
-	// 	fmt.Println(t)
-	// 	// fmt.Println(timeRecorded.UnixNano() / int64(time.Millisecond))
-	// }
-
 	http.HandleFunc("/", urlRouter) // Handle all the request via the urlRouter function
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
