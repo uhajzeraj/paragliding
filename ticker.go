@@ -21,11 +21,21 @@ func apiTickerHandler(w http.ResponseWriter, r *http.Request) {
 
 		// timestamps := returnTimestamps(5)
 
-		// processFinish := time.Now() // Track when the process finished
-
 		response := `{`
-		response += `"t_latest":` + `"` + latestTS.Format("02.01.2006 15:04:05.000") + `",`
-		response += `"t_start":` + `"` + oldestTS.Format("02.01.2006 15:04:05.000") + `",`
+		response += `"t_latest": "`
+		if latestTS.IsZero() {
+			response += `",`
+		} else {
+			response += latestTS.Format("02.01.2006 15:04:05.000") + `",`
+		}
+
+		response += `"t_start": "`
+		if oldestTS.IsZero() {
+			response += `",`
+		} else {
+			response += oldestTS.Format("02.01.2006 15:04:05.000") + `",`
+		}
+
 		response += `"tracks":` + `[`
 		// t_stop SHOULD BE ADDED HERE
 
@@ -55,9 +65,4 @@ func apiTickerLatestHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusNotFound) // If it isn't, send a 404 Not Found status
 	}
-}
-
-// Redirect to /api
-func redirectHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "paragliding/api", http.StatusSeeOther) // Redirect this request
 }

@@ -12,6 +12,23 @@ import (
 	igc "github.com/marni/goigc"
 )
 
+// URLTrack - Keep track of the url used for adding the igc file
+type URLTrack struct {
+	trackName    string
+	track        igc.Track
+	timeRecorded time.Time
+}
+
+var igcFileCount = 1 // Keep count of the number of igc files added to the system
+
+// Map where the igcFiles are in-memory stored
+var igcFiles = make(map[string]URLTrack) // map["URL"]urlTrack
+
+//
+//
+//
+// Track Handlers
+
 // POST/GET /api/track
 func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 

@@ -124,8 +124,24 @@ func latestTimestamp() time.Time {
 
 // Return the oldest timestamp
 func oldestTimestamp() time.Time {
+
+	// Just the first time, add the first found timestamp
+	// After that, check that one against the other timestamps in the map
+	// If there is none, JSON response will be an empty string ""
+	// If there is one timestamp, that one is the oldest timestamp as well
+
+	count := 0
+
 	var oldestTimestamp time.Time  // Create a variable to store the oldest track added
 	for _, val := range igcFiles { // Iterate every track to find the oldest track added
+
+		// Assign to oldestTimestamp a value, but just once
+		// Then we check it against other timestamps of other tracks in the map
+		if count != 1 {
+			oldestTimestamp = val.timeRecorded
+			count++
+		}
+
 		if val.timeRecorded.Before(oldestTimestamp) { // If current track timestamp is before the current latestTimestamp...
 			oldestTimestamp = val.timeRecorded // Set that one as the latestTimestamp
 		}
@@ -140,7 +156,6 @@ func returnTracks(n int) string {
 	response := ""
 
 	for _, val := range igcFiles { // Go through the map
-		fmt.Println(val.trackName)
 		if count < n { // Check if the count is less than the number of required elements
 			if count == len(igcFiles) {
 				response += `"` + val.trackName + `"` // Append the tackName to the response

@@ -27,3 +27,8 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound) // If it isn't, send a 404 Not Found status
 	}
 }
+
+// Redirect to /api
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "paragliding/api", http.StatusSeeOther) // Redirect this request
+}
