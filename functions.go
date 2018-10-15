@@ -10,10 +10,20 @@ import (
 	igc "github.com/marni/goigc"
 )
 
+// Find the id of the track against URL in the igcTracks slice
+func idOfTrack(url string) int {
+	for key, val := range igcTracks {
+		if val.trackURL == url {
+			return key
+		}
+	}
+	return -1
+}
+
 // Check if url is in the urlTrack map
-func urlInMap(url string) bool {
-	for urlInMap := range igcFiles {
-		if urlInMap == url {
+func urlInSlice(url string) bool {
+	for _, urlInMap := range igcTracks {
+		if urlInMap.trackURL == url {
 			return true
 		}
 	}
@@ -21,13 +31,13 @@ func urlInMap(url string) bool {
 }
 
 // Get the index of the track in the igcFiles slice, if it is there
-func getTrackIndex(trackName string) string {
-	for url, track := range igcFiles {
+func getTrackIndex(trackName string) int {
+	for key, track := range igcTracks {
 		if track.trackName == trackName {
-			return url
+			return key
 		}
 	}
-	return ""
+	return -1
 }
 
 // ISO8601 duration parsing function
@@ -112,8 +122,8 @@ func regexMatches(url string, urlMap map[string]func(http.ResponseWriter, *http.
 
 // Return the latest timestamp
 func latestTimestamp() time.Time {
-	var latestTimestamp time.Time  // Create a variable to store the most recent track added
-	for _, val := range igcFiles { // Iterate every track to find the most recent track added
+	var latestTimestamp time.Time   // Create a variable to store the most recent track added
+	for _, val := range igcTracks { // Iterate every track to find the most recent track added
 		if val.timeRecorded.After(latestTimestamp) { // If current track timestamp is after the current latestTimestamp...
 			latestTimestamp = val.timeRecorded // Set that one as the latestTimestamp
 		}
@@ -132,8 +142,8 @@ func oldestTimestamp() time.Time {
 
 	count := 0
 
-	var oldestTimestamp time.Time  // Create a variable to store the oldest track added
-	for _, val := range igcFiles { // Iterate every track to find the oldest track added
+	var oldestTimestamp time.Time   // Create a variable to store the oldest track added
+	for _, val := range igcTracks { // Iterate every track to find the oldest track added
 
 		// Assign to oldestTimestamp a value, but just once
 		// Then we check it against other timestamps of other tracks in the map
@@ -155,9 +165,9 @@ func returnTracks(n int) string {
 	count := 1
 	response := ""
 
-	for _, val := range igcFiles { // Go through the map
+	for _, val := range igcTracks { // Go through the map
 		if count < n { // Check if the count is less than the number of required elements
-			if count == len(igcFiles) {
+			if count == len(igcTracks) {
 				response += `"` + val.trackName + `"` // Append the tackName to the response
 				break                                 // Break out of the loop, no need to add any other elements
 			} else {
