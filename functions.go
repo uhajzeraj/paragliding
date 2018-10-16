@@ -20,7 +20,7 @@ func idOfTrack(url string) int {
 	return -1
 }
 
-// Check if url is in the urlTrack map
+// Check if url is in the igcTracks slice
 func urlInSlice(url string) bool {
 	for _, urlInMap := range igcTracks {
 		if urlInMap.trackURL == url {
@@ -136,20 +136,17 @@ func latestTimestamp() time.Time {
 func oldestTimestamp() time.Time {
 
 	// Just the first time, add the first found timestamp
-	// After that, check that one against the other timestamps in the map
+	// After that, check that one against the other timestamps in the slice
 	// If there is none, JSON response will be an empty string ""
 	// If there is one timestamp, that one is the oldest timestamp as well
 
-	count := 0
-
-	var oldestTimestamp time.Time   // Create a variable to store the oldest track added
-	for _, val := range igcTracks { // Iterate every track to find the oldest track added
+	var oldestTimestamp time.Time     // Create a variable to store the oldest track added
+	for key, val := range igcTracks { // Iterate every track to find the oldest track added
 
 		// Assign to oldestTimestamp a value, but just once
-		// Then we check it against other timestamps of other tracks in the map
-		if count != 1 {
+		// Then we check it against other timestamps of other tracks in the slice
+		if key == 0 {
 			oldestTimestamp = val.timeRecorded
-			count++
 		}
 
 		if val.timeRecorded.Before(oldestTimestamp) { // If current track timestamp is before the current latestTimestamp...
@@ -162,17 +159,15 @@ func oldestTimestamp() time.Time {
 
 // Return track names
 func returnTracks(n int) string {
-	count := 1
 	response := ""
 
-	for _, val := range igcTracks { // Go through the map
-		if count < n { // Check if the count is less than the number of required elements
-			if count == len(igcTracks) {
+	for key, val := range igcTracks { // Go through the slice
+		if key < n-1 { // Check if the count is less than the number of required elements
+			if key == len(igcTracks)-1 {
 				response += `"` + val.trackName + `"` // Append the tackName to the response
 				break                                 // Break out of the loop, no need to add any other elements
 			} else {
 				response += `"` + val.trackName + `",` // Append the trackName to the response
-				count++                                // Incerement the count
 			}
 		} else {
 			response += `"` + val.trackName + `"` // Append the tackName to the response
