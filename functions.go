@@ -157,6 +157,27 @@ func oldestTimestamp() time.Time {
 	return oldestTimestamp
 }
 
+// Return the oldest timestamp which is newer than input timestamp
+func oldestNewerTimestamp(inputTS string) time.Time {
+
+	ts := time.Now()
+	testTs := ts
+
+	parsedTime, _ := time.Parse("02.01.2006 15:04:05.000", inputTS) // Parse the string into time
+
+	for _, val := range igcTracks { // Iterate every track to find the most recent track added
+		if val.timeRecorded.After(parsedTime) && val.timeRecorded.Before(ts) { // If current track timestamp is after the current latestTimestamp...
+			ts = val.timeRecorded // Set that one as the latestTimestamp
+		}
+	}
+
+	if testTs.Equal(ts) {
+		return time.Time{}
+	}
+
+	return ts
+}
+
 // Return track names
 func returnTracks(n int) string {
 	response := ""
