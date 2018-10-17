@@ -13,7 +13,7 @@ import (
 // Find the id of the track against URL in the igcTracks slice
 func idOfTrack(url string) int {
 	for key, val := range igcTracks {
-		if val.trackURL == url {
+		if val.TrackURL == url {
 			return key
 		}
 	}
@@ -23,7 +23,7 @@ func idOfTrack(url string) int {
 // Check if url is in the igcTracks slice
 func urlInSlice(url string) bool {
 	for _, urlInMap := range igcTracks {
-		if urlInMap.trackURL == url {
+		if urlInMap.TrackURL == url {
 			return true
 		}
 	}
@@ -33,7 +33,7 @@ func urlInSlice(url string) bool {
 // Get the index of the track in the igcFiles slice, if it is there
 func getTrackIndex(trackName string) int {
 	for key, track := range igcTracks {
-		if track.trackName == trackName {
+		if track.TrackName == trackName {
 			return key
 		}
 	}
@@ -91,6 +91,7 @@ func parseTimeDifference(timeDifference int) string {
 	return result
 }
 
+// TODO add only 2 middle points (3 distances in total) **OPTIONAL?**
 // Calculate the total distance of the track
 func calculateTotalDistance(trackPoints []igc.Point) string {
 
@@ -124,8 +125,8 @@ func regexMatches(url string, urlMap map[string]func(http.ResponseWriter, *http.
 func latestTimestamp() time.Time {
 	var latestTimestamp time.Time   // Create a variable to store the most recent track added
 	for _, val := range igcTracks { // Iterate every track to find the most recent track added
-		if val.timeRecorded.After(latestTimestamp) { // If current track timestamp is after the current latestTimestamp...
-			latestTimestamp = val.timeRecorded // Set that one as the latestTimestamp
+		if val.TimeRecorded.After(latestTimestamp) { // If current track timestamp is after the current latestTimestamp...
+			latestTimestamp = val.TimeRecorded // Set that one as the latestTimestamp
 		}
 	}
 
@@ -146,11 +147,11 @@ func oldestTimestamp() time.Time {
 		// Assign to oldestTimestamp a value, but just once
 		// Then we check it against other timestamps of other tracks in the slice
 		if key == 0 {
-			oldestTimestamp = val.timeRecorded
+			oldestTimestamp = val.TimeRecorded
 		}
 
-		if val.timeRecorded.Before(oldestTimestamp) { // If current track timestamp is before the current latestTimestamp...
-			oldestTimestamp = val.timeRecorded // Set that one as the latestTimestamp
+		if val.TimeRecorded.Before(oldestTimestamp) { // If current track timestamp is before the current latestTimestamp...
+			oldestTimestamp = val.TimeRecorded // Set that one as the latestTimestamp
 		}
 	}
 
@@ -166,8 +167,8 @@ func oldestNewerTimestamp(inputTS string) time.Time {
 	parsedTime, _ := time.Parse("02.01.2006 15:04:05.000", inputTS) // Parse the string into time
 
 	for _, val := range igcTracks { // Iterate every track to find the most recent track added
-		if val.timeRecorded.After(parsedTime) && val.timeRecorded.Before(ts) { // If current track timestamp is after the current latestTimestamp...
-			ts = val.timeRecorded // Set that one as the latestTimestamp
+		if val.TimeRecorded.After(parsedTime) && val.TimeRecorded.Before(ts) { // If current track timestamp is after the current latestTimestamp...
+			ts = val.TimeRecorded // Set that one as the latestTimestamp
 		}
 	}
 
@@ -185,13 +186,13 @@ func returnTracks(n int) string {
 	for key, val := range igcTracks { // Go through the slice
 		if key < n-1 { // Check if the count is less than the number of required elements
 			if key == len(igcTracks)-1 {
-				response += `"` + val.trackName + `"` // Append the tackName to the response
+				response += `"` + val.TrackName + `"` // Append the tackName to the response
 				break                                 // Break out of the loop, no need to add any other elements
 			} else {
-				response += `"` + val.trackName + `",` // Append the trackName to the response
+				response += `"` + val.TrackName + `",` // Append the trackName to the response
 			}
 		} else {
-			response += `"` + val.trackName + `"` // Append the tackName to the response
+			response += `"` + val.TrackName + `"` // Append the tackName to the response
 			break                                 // Break out of the loop, no need to add any other elements
 		}
 	}
