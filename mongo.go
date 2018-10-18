@@ -7,6 +7,7 @@ import (
 	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/bson/objectid"
 	"github.com/mongodb/mongo-go-driver/mongo"
+	"github.com/mongodb/mongo-go-driver/mongo/findopt"
 )
 
 // ObjectID used in MongoDB
@@ -123,11 +124,25 @@ func increaseTrackCounter(cnt int32, db *mongo.Database) {
 }
 
 // Get all tracks
-func getAllTracks(client *mongo.Client) []igcTrack {
+func getAllTracks(client *mongo.Client, points bool) []igcTrack {
 	db := client.Database("paragliding") // `paragliding` Database
 	collection := db.Collection("track") // `track` Collection
 
-	cursor, err := collection.Find(context.Background(), nil)
+	var cursor mongo.Cursor
+	var err error
+	// If points boolean is true
+	// Get the points for the track also
+	// Otherwise don't
+	if points {
+		cursor, err = collection.Find(context.Background(), nil)
+	} else {
+		projection := findopt.Projection(bson.NewDocument(
+			bson.EC.Int32("trackpoints", 0),
+			bson.EC.Int32("_id", 0),
+		))
+
+		cursor, err = collection.Find(context.Background(), nil, projection)
+	}
 
 	if err != nil {
 		log.Fatal(err)

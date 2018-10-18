@@ -17,8 +17,10 @@ func apiTickerHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 
-		oldestTS := oldestTimestamp()
-		latestTS := latestTimestamp()
+		timestamps := tickerTimestamps("")
+
+		oldestTS := timestamps.oldestTimestamp
+		latestTS := timestamps.latestTimestamp
 
 		// timestamps := returnTimestamps(5)
 
@@ -57,7 +59,9 @@ func apiTickerHandler(w http.ResponseWriter, r *http.Request) {
 // GET /api/ticker/latest
 func apiTickerLatestHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" { // The request has to be of GET type
-		latestTimestamp := latestTimestamp()
+
+		timestamps := tickerTimestamps("")
+		latestTimestamp := timestamps.latestTimestamp
 
 		if latestTimestamp.IsZero() { // If you dont assign a time to a time.Time variable, it's value is 0 date. We can check with IsZero() function
 			fmt.Fprintln(w, "There are no track records")
@@ -85,8 +89,10 @@ func apiTickerTimestampHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		olderTS := oldestNewerTimestamp(timestamp)
-		latestTS := latestTimestamp()
+		timestamps := tickerTimestamps(timestamp)
+
+		olderTS := timestamps.oldestNewerTimestamp
+		latestTS := timestamps.latestTimestamp
 
 		w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 

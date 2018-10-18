@@ -27,7 +27,7 @@ type igcTrack struct {
 }
 
 // Map where the igcFiles are in-memory stored
-var igcTracks []igcTrack // slice of igcTrack
+// var igcTracks []igcTrack // slice of igcTrack
 
 //
 //
@@ -96,7 +96,7 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 		// Connect to MongoDB
 		conn := mongoConnect()
 
-		igcTracks := getAllTracks(conn)
+		igcTracks := getAllTracks(conn, false)
 
 		response := "["
 		for i := range igcTracks { // Get all the IDs of .igc files stored in the igcFiles map
