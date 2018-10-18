@@ -121,3 +121,55 @@ func increaseTrackCounter(cnt int32, db *mongo.Database) {
 		log.Fatal(err)
 	}
 }
+
+// Get all tracks
+func getAllTracks(client *mongo.Client) []igcTrack {
+	db := client.Database("paragliding") // `paragliding` Database
+	collection := db.Collection("track") // `track` Collection
+
+	cursor, err := collection.Find(context.Background(), nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer cursor.Close(context.Background())
+
+	resTracks := []igcTrack{}
+	resTrack := igcTrack{}
+
+	for cursor.Next(context.Background()) {
+		err := cursor.Decode(&resTrack)
+		if err != nil {
+			log.Fatal(err)
+		}
+		resTracks = append(resTracks, resTrack) // Append each resTrack to resTracks slice
+	}
+
+	return resTracks
+}
+
+// Get track
+func getTrack(client *mongo.Client, url string) igcTrack {
+	db := client.Database("paragliding") // `paragliding` Database
+	collection := db.Collection("track") // `track` Collection
+
+	cursor, err := collection.Find(context.Background(),
+		bson.NewDocument(bson.EC.String("trackname", url)))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resTrack := igcTrack{}
+
+	for cursor.Next(context.Background()) {
+		err := cursor.Decode(&resTrack)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return resTrack
+
+}

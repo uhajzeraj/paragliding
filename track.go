@@ -16,7 +16,6 @@ import (
 
 // URLTrack - Keep track of the url used for adding the igc file
 type igcTrack struct {
-	_id             int
 	TrackURL        string
 	TrackName       string
 	TimeRecorded    time.Time
@@ -68,9 +67,7 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 
 			// The info which needs to be saved in the database
 			trackWrite := igcTrack{TrackURL: data["url"], TrackName: "igc" + strconv.Itoa(id), TimeRecorded: t,
-				TrackDate: track.Date, TrackPilot: track.Pilot, TrackGliderType: track.GliderType, TrackGliderID: track.GliderID, TrackPoints: track.Points,
-				_id: 5}
-
+				TrackDate: track.Date, TrackPilot: track.Pilot, TrackGliderType: track.GliderType, TrackGliderID: track.GliderID, TrackPoints: track.Points}
 			// Insert it in the database
 			_, err = trackColl.InsertOne(context.Background(), trackWrite)
 			if err != nil {
@@ -96,6 +93,11 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 
 		x := 0 // Just some numeric iterator
 
+		// Connect to MongoDB
+		conn := mongoConnect()
+
+		igcTracks := getAllTracks(conn)
+
 		response := "["
 		for i := range igcTracks { // Get all the IDs of .igc files stored in the igcFiles map
 			if x != len(igcTracks)-1 { // If it's the last item in the array, don't add the ","
@@ -118,19 +120,22 @@ func apiIgcIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	// The request has to be of GET type
 	if r.Method == "GET" {
-		urlID := path.Base(r.URL.Path) // returns the part after the last '/' in the url
+		urlTrackName := path.Base(r.URL.Path) // returns the part after the last '/' in the url
 
-		igcTracksIndex := getTrackIndex(urlID)
-		if igcTracksIndex != -1 { // Check whether the url is different from an empty string
+		conn := mongoConnect()
+
+		igcTrack := getTrack(conn, urlTrackName)
+
+		if igcTrack.TrackName != "" { // Check whether the name is different from an empty string
 			w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 
 			response := `{`
-			response += `"H_date": "` + igcTracks[igcTracksIndex].TrackDate.String() + `",`
-			response += `"pilot": "` + igcTracks[igcTracksIndex].TrackPilot + `",`
-			response += `"glider": "` + igcTracks[igcTracksIndex].TrackGliderType + `",`
-			response += `"glider_id": "` + igcTracks[igcTracksIndex].TrackGliderID + `",`
-			response += `"track_length": "` + calculateTotalDistance(igcTracks[igcTracksIndex].TrackPoints) + `",`
-			response += `"track_src_url": "` + igcTracks[igcTracksIndex].TrackURL + `"`
+			response += `"H_date": "` + igcTrack.TrackDate.String() + `",`
+			response += `"pilot": "` + igcTrack.TrackPilot + `",`
+			response += `"glider": "` + igcTrack.TrackGliderType + `",`
+			response += `"glider_id": "` + igcTrack.TrackGliderID + `",`
+			response += `"track_length": "` + calculateTotalDistance(igcTrack.TrackPoints) + `",`
+			response += `"track_src_url": "` + igcTrack.TrackURL + `"`
 			response += `}`
 
 			fmt.Fprintf(w, response)
@@ -151,17 +156,19 @@ func apiIgcIDFieldHandler(w http.ResponseWriter, r *http.Request) {
 		field := pathArray[len(pathArray)-1]        // The part after the last "/", is the field
 		uniqueID := pathArray[len(pathArray)-2]     // The part after the second to last "/", is the unique ID
 
-		igcTracksIndex := getTrackIndex(uniqueID)
+		conn := mongoConnect()
 
-		if igcTracksIndex != -1 { // Check whether the url is different from an empty string
+		igcTrack := getTrack(conn, uniqueID)
+
+		if igcTrack.TrackName != "" { // Check whether the name is different from an empty string
 
 			something := map[string]string{ // Map the field to one of the Track struct attributes in the igcFiles slice
-				"pilot":         igcTracks[igcTracksIndex].TrackPilot,
-				"glider":        igcTracks[igcTracksIndex].TrackGliderType,
-				"glider_id":     igcTracks[igcTracksIndex].TrackGliderID,
-				"track_length":  calculateTotalDistance(igcTracks[igcTracksIndex].TrackPoints),
-				"H_date":        igcTracks[igcTracksIndex].TrackDate.String(),
-				"track_src_url": igcTracks[igcTracksIndex].TrackURL,
+				"pilot":         igcTrack.TrackPilot,
+				"glider":        igcTrack.TrackGliderType,
+				"glider_id":     igcTrack.TrackGliderID,
+				"track_length":  calculateTotalDistance(igcTrack.TrackPoints),
+				"H_date":        igcTrack.TrackDate.String(),
+				"track_src_url": igcTrack.TrackURL,
 			}
 
 			response := something[field] // This will work because the RegEx checks whether the name is written correctly

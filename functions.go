@@ -11,34 +11,34 @@ import (
 )
 
 // Find the id of the track against URL in the igcTracks slice
-func idOfTrack(url string) int {
-	for key, val := range igcTracks {
-		if val.TrackURL == url {
-			return key
-		}
-	}
-	return -1
-}
+// func idOfTrack(url string) int {
+// 	for key, val := range igcTracks {
+// 		if val.TrackURL == url {
+// 			return key
+// 		}
+// 	}
+// 	return -1
+// }
 
 // Check if url is in the igcTracks slice
-func urlInSlice(url string) bool {
-	for _, urlInMap := range igcTracks {
-		if urlInMap.TrackURL == url {
-			return true
-		}
-	}
-	return false
-}
+// func urlInSlice(url string) bool {
+// 	for _, urlInMap := range igcTracks {
+// 		if urlInMap.TrackURL == url {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
 
 // Get the index of the track in the igcFiles slice, if it is there
-func getTrackIndex(trackName string) int {
-	for key, track := range igcTracks {
-		if track.TrackName == trackName {
-			return key
-		}
-	}
-	return -1
-}
+// func getTrackIndex(trackName string) int {
+// 	for key, track := range igcTracks {
+// 		if track.TrackName == trackName {
+// 			return key
+// 		}
+// 	}
+// 	return -1
+// }
 
 // ISO8601 duration parsing function
 func parseTimeDifference(timeDifference int) string {
