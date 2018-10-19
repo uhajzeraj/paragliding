@@ -37,7 +37,7 @@ type igcTrack struct {
 // POST/GET /api/track
 func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method == "POST" { // If method is POST, user has entered the URL
+	if r.Method == http.MethodPost { // If method is POST, user has entered the URL
 		var data map[string]string // POST body is of content-type: JSON; the result can be stored in a map
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
@@ -88,7 +88,7 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 		fmt.Fprintf(w, response)
 
-	} else if r.Method == "GET" { // If the method is GET
+	} else if r.Method == http.MethodGet { // If the method is GET
 		w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 
 		x := 0 // Just some numeric iterator
@@ -119,7 +119,7 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 func apiIgcIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	// The request has to be of GET type
-	if r.Method == "GET" {
+	if r.Method == http.MethodGet {
 		urlTrackName := path.Base(r.URL.Path) // returns the part after the last '/' in the url
 
 		conn := mongoConnect()
@@ -151,7 +151,7 @@ func apiIgcIDHandler(w http.ResponseWriter, r *http.Request) {
 func apiIgcIDFieldHandler(w http.ResponseWriter, r *http.Request) {
 
 	// The request has to be of GET type
-	if r.Method == "GET" {
+	if r.Method == http.MethodGet {
 		pathArray := strings.Split(r.URL.Path, "/") // split the URL Path into chunks, whenever there's a "/"
 		field := pathArray[len(pathArray)-1]        // The part after the last "/", is the field
 		uniqueID := pathArray[len(pathArray)-2]     // The part after the second to last "/", is the unique ID

@@ -11,7 +11,7 @@ import (
 // TODO add t_stop field, whatever that means
 // GET /api/ticker
 func apiTickerHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" { // The request has to be of GET type
+	if r.Method == http.MethodGet { // The request has to be of GET type
 
 		processStart := time.Now() // Track when the process started
 
@@ -39,15 +39,19 @@ func apiTickerHandler(w http.ResponseWriter, r *http.Request) {
 			response += oldestTS.Format("02.01.2006 15:04:05.000") + `",`
 		}
 
+		// returnTracks returns the last element and the n number of tracks
+		trackArray, tStop := returnTracks(5)
+
 		// t_stop SHOULD BE ADDED HERE
+		response += `"t_stop": "` + tStop.Format("02.01.2006 15:04:05.000") + `",`
 
 		response += `"tracks":` + `[`
 
 		// THAT 5 SHOULD BE ABLE TO CHANGE DYNAMICALLY
-		response += returnTracks(5) // Maximum of 5 tracks
+		response += trackArray // Maximum of 5 tracks
 
 		response += `],`
-		response += `"processing":` + `"` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 6, 64) + `ms"`
+		response += `"processing":` + `"` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms"`
 		response += `}`
 		fmt.Fprintln(w, response)
 	} else {
@@ -58,7 +62,7 @@ func apiTickerHandler(w http.ResponseWriter, r *http.Request) {
 
 // GET /api/ticker/latest
 func apiTickerLatestHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" { // The request has to be of GET type
+	if r.Method == http.MethodGet { // The request has to be of GET type
 
 		timestamps := tickerTimestamps("")
 		latestTimestamp := timestamps.latestTimestamp
@@ -75,7 +79,7 @@ func apiTickerLatestHandler(w http.ResponseWriter, r *http.Request) {
 
 // GET /api/ticker/<timestamp>
 func apiTickerTimestampHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" { // The request has to be of GET type
+	if r.Method == http.MethodGet { // The request has to be of GET type
 
 		processStart := time.Now() // Track when the process started
 
@@ -111,16 +115,20 @@ func apiTickerTimestampHandler(w http.ResponseWriter, r *http.Request) {
 			response += olderTS.Format("02.01.2006 15:04:05.000") + `",`
 		}
 
+		// returnTracks returns the last element and the n number of tracks
+		trackArray, tStop := returnTracks(5)
+
 		// t_stop SHOULD BE ADDED HERE
+		response += `"t_stop": "` + tStop.Format("02.01.2006 15:04:05.000") + `",`
 
 		response += `"tracks":` + `[`
 
 		// THAT 5 SHOULD BE ABLE TO CHANGE DYNAMICALLY
-		response += returnTracks(5) // Maximum of 5 tracks
+		response += trackArray // Maximum of 5 tracks
 
 		response += `],`
 
-		response += `"processing":` + `"` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 6, 64) + `ms"`
+		response += `"processing":` + `"` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms"`
 		response += `}`
 
 		fmt.Fprintln(w, response)

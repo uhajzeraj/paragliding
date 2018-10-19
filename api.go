@@ -10,7 +10,7 @@ import (
 func apiHandler(w http.ResponseWriter, r *http.Request) {
 
 	// The request has to be of GET type
-	if r.Method == "GET" {
+	if r.Method == http.MethodGet {
 		w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 
 		timeNow := int(time.Now().Unix()) // Unix timestamp when the handler was called

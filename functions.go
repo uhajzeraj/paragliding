@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	igc "github.com/marni/goigc"
@@ -172,26 +173,43 @@ func tickerTimestamps(inputTS string) Timestamps {
 }
 
 // Return track names
-func returnTracks(n int) string {
-	response := ""
+// And also t_stop track
+func returnTracks(n int) (string, time.Time) {
+	var response string
+	var tStop time.Time
 
 	conn := mongoConnect()
 
 	resultTracks := getAllTracks(conn, false)
 
 	for key, val := range resultTracks { // Go through the slice
-		if key < n-1 { // Check if the count is less than the number of required elements
-			if key == len(resultTracks)-1 {
-				response += `"` + val.TrackName + `"` // Append the tackName to the response
-				break                                 // Break out of the loop, no need to add any other elements
-			} else {
-				response += `"` + val.TrackName + `",` // Append the trackName to the response
-			}
-		} else {
-			response += `"` + val.TrackName + `"` // Append the tackName to the response
-			break                                 // Break out of the loop, no need to add any other elements
+		response += `"` + val.TrackName + `",`
+		if key == n-1 || key == len(resultTracks)-1 {
+			tStop = val.TimeRecorded
+			break
 		}
 	}
 
-	return response
+	// Get rid of that last `,` of JSON will freak out
+	response = strings.TrimRight(response, ",")
+
+	// for key, val := range resultTracks { // Go through the slice
+	// 	if key < n-1 { // Check if the count is less than the number of required elements
+	// 		if key == len(resultTracks)-1 {
+	// 			response += `"` + val.TrackName + `"` // Append the tackName to the response
+	// 			break                                 // Break out of the loop, no need to add any other elements
+	// 		} else {
+	// 			response += `"` + val.TrackName + `",` // Append the trackName to the response
+	// 		}
+	// 	} else {
+	// 		if key == n {
+	// 			tStop = val.TimeRecorded
+	// 		}
+
+	// 		response += `"` + val.TrackName + `"` // Append the tackName to the response
+	// 		break                                 // Break out of the loop, no need to add any other elements
+	// 	}
+	// }
+
+	return response, tStop
 }
