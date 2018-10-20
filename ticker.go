@@ -24,17 +24,17 @@ func apiTickerHandler(w http.ResponseWriter, r *http.Request) {
 
 		// timestamps := returnTimestamps(5)
 
-		response := `{`
+		response := gmlOB
 		response += `"t_latest": "`
 		if latestTS.IsZero() {
-			response += `",`
+			response += gmlCPC
 		} else {
 			response += latestTS.Format("02.01.2006 15:04:05.000") + `",`
 		}
 
 		response += `"t_start": "`
 		if oldestTS.IsZero() {
-			response += `",`
+			response += gmlCPC
 		} else {
 			response += oldestTS.Format("02.01.2006 15:04:05.000") + `",`
 		}
@@ -52,7 +52,7 @@ func apiTickerHandler(w http.ResponseWriter, r *http.Request) {
 
 		response += `],`
 		response += `"processing":` + `"` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms"`
-		response += `}`
+		response += gmlCB
 		fmt.Fprintln(w, response)
 	} else {
 		w.WriteHeader(http.StatusNotFound) // If it isn't, send a 404 Not Found status
@@ -100,17 +100,17 @@ func apiTickerTimestampHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 
-		response := `{`
+		response := gmlOB
 		response += `"t_latest": "`
 		if latestTS.IsZero() {
-			response += `",`
+			response += gmlCPC
 		} else {
 			response += latestTS.Format("02.01.2006 15:04:05.000") + `",`
 		}
 
 		response += `"t_start": "`
 		if olderTS.IsZero() {
-			response += `",`
+			response += gmlCPC
 		} else {
 			response += olderTS.Format("02.01.2006 15:04:05.000") + `",`
 		}
@@ -129,7 +129,7 @@ func apiTickerTimestampHandler(w http.ResponseWriter, r *http.Request) {
 		response += `],`
 
 		response += `"processing":` + `"` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms"`
-		response += `}`
+		response += gmlCB
 
 		fmt.Fprintln(w, response)
 

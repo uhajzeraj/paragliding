@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -23,50 +22,61 @@ func parseTimeDifference(timeDifference int) string {
 
 	result := "P" // Different time intervals are attached to this, if they are != 0
 
+	// Lower the cyclomatic complexity
+	// Save the durations and keys in arrays
+
+	var dateValue [4]int
+	dateKey := [4]string{"Y", "M", "W", "D"}
+
+	var timeValue [3]int
+	timeKey := [3]string{"H", "M", "S"}
+
 	// Formulas for calculating different time intervals in seconds
+
+	// Date
 	timeLeft := timeDifference
-	years := timeDifference / 31557600
-	timeLeft -= years * 31557600
-	months := timeLeft / 2592000
-	timeLeft -= months * 2592000
-	weeks := timeLeft / 604800
-	timeLeft -= weeks * 604800
-	days := timeLeft / 86400
-	timeLeft -= days * 86400
-	hours := timeLeft / 3600
-	timeLeft -= hours * 3600
-	minutes := timeLeft / 60
-	timeLeft -= minutes * 60
-	seconds := timeLeft
+	dateValue[0] = timeDifference / 31557600
 
-	// Add time invervals to the result only if they are different form 0
-	if years != 0 {
-		result += fmt.Sprintf("Y%d", years)
-	}
-	if months != 0 {
-		result += fmt.Sprintf("M%d", months)
-	}
-	if weeks != 0 {
-		result += fmt.Sprintf("W%d", weeks)
-	}
-	if days != 0 {
-		result += fmt.Sprintf("D%d", days)
+	timeLeft -= dateValue[0] * 31557600
+	dateValue[1] = timeLeft / 2592000
+
+	timeLeft -= dateValue[1] * 2592000
+	dateValue[2] = timeLeft / 604800
+
+	timeLeft -= dateValue[2] * 604800
+	dateValue[3] = timeLeft / 86400
+
+	// Time
+	timeLeft -= dateValue[3] * 86400
+	timeValue[0] = timeLeft / 3600
+
+	timeLeft -= timeValue[0] * 3600
+	timeValue[1] = timeLeft / 60
+
+	timeLeft -= timeValue[1] * 60
+	timeValue[2] = timeLeft
+
+	for i := 0; i < 4; i++ {
+		// Add the time intervals if they are diffrent from 0
+		if dateValue[i] != 0 {
+			result += dateKey[i] + strconv.Itoa(dateValue[i])
+		}
 	}
 
-	if hours != 0 || minutes != 0 || seconds != 0 { // Check in case time intervals are 0
+	// // Check in case time intervals are 0
+	if timeValue[0] != 0 || timeValue[1] != 0 || timeValue[2] != 0 {
 		result += "T"
-		if hours != 0 {
-			result += fmt.Sprintf("H%d", hours)
-		}
-		if minutes != 0 {
-			result += fmt.Sprintf("M%d", minutes)
-		}
-		if seconds != 0 {
-			result += fmt.Sprintf("S%d", seconds)
+	}
+
+	for i := 0; i < 3; i++ {
+		// Add the time intervals if they are diffrent from 0
+		if timeValue[i] != 0 {
+			result += timeKey[i] + strconv.Itoa(timeValue[i])
 		}
 	}
 
 	return result
+
 }
 
 // TODO add only 2 middle points (3 distances in total) **OPTIONAL?**
@@ -192,24 +202,6 @@ func returnTracks(n int) (string, time.Time) {
 
 	// Get rid of that last `,` of JSON will freak out
 	response = strings.TrimRight(response, ",")
-
-	// for key, val := range resultTracks { // Go through the slice
-	// 	if key < n-1 { // Check if the count is less than the number of required elements
-	// 		if key == len(resultTracks)-1 {
-	// 			response += `"` + val.TrackName + `"` // Append the tackName to the response
-	// 			break                                 // Break out of the loop, no need to add any other elements
-	// 		} else {
-	// 			response += `"` + val.TrackName + `",` // Append the trackName to the response
-	// 		}
-	// 	} else {
-	// 		if key == n {
-	// 			tStop = val.TimeRecorded
-	// 		}
-
-	// 		response += `"` + val.TrackName + `"` // Append the tackName to the response
-	// 		break                                 // Break out of the loop, no need to add any other elements
-	// 	}
-	// }
 
 	return response, tStop
 }

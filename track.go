@@ -81,9 +81,9 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 
 		resultTrackName := trackNameFromURL(data["url"], trackColl)
 
-		response := `{`
+		response := gmlOB
 		response += `"id": "` + resultTrackName + `"`
-		response += `}`
+		response += gmlCB
 
 		w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 		fmt.Fprintf(w, response)
@@ -129,14 +129,14 @@ func apiIgcIDHandler(w http.ResponseWriter, r *http.Request) {
 		if igcTrack.TrackName != "" { // Check whether the name is different from an empty string
 			w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 
-			response := `{`
+			response := gmlOB
 			response += `"H_date": "` + igcTrack.TrackDate.String() + `",`
 			response += `"pilot": "` + igcTrack.TrackPilot + `",`
 			response += `"glider": "` + igcTrack.TrackGliderType + `",`
 			response += `"glider_id": "` + igcTrack.TrackGliderID + `",`
 			response += `"track_length": "` + calculateTotalDistance(igcTrack.TrackPoints) + `",`
 			response += `"track_src_url": "` + igcTrack.TrackURL + `"`
-			response += `}`
+			response += gmlCB
 
 			fmt.Fprintf(w, response)
 		} else {

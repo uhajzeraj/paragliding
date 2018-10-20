@@ -10,9 +10,9 @@ var timeStarted = int(time.Now().Unix()) // Unix timestamp when the service star
 
 // Gometalinter
 const (
-	gmlOB    = `{`
-	gmlCB    = `}`
-	gmlComma = `,`
+	gmlOB  = `{`
+	gmlCB  = `}`
+	gmlCPC = `",`
 )
 
 func urlRouter(w http.ResponseWriter, r *http.Request) {

@@ -17,11 +17,11 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 
 		iso8601duration := parseTimeDifference(timeNow - timeStarted) // Calculate the time elapsed by subtracting the times
 
-		response := `{`
+		response := gmlOB
 		response += `"uptime": "` + iso8601duration + `",`
 		response += `"info": "Service for IGC tracks.",`
 		response += `"version": "v1"`
-		response += `}`
+		response += gmlCB
 		fmt.Fprintln(w, response)
 	} else {
 		w.WriteHeader(http.StatusNotFound) // If it isn't, send a 404 Not Found status
