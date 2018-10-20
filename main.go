@@ -8,6 +8,13 @@ import (
 
 var timeStarted = int(time.Now().Unix()) // Unix timestamp when the service started
 
+// Gometalinter
+const (
+	gmlOB    = `{`
+	gmlCB    = `}`
+	gmlComma = `,`
+)
+
 func urlRouter(w http.ResponseWriter, r *http.Request) {
 
 	urlMap := map[string]func(http.ResponseWriter, *http.Request){ // A map of accepted URL RegEx patterns
@@ -19,6 +26,9 @@ func urlRouter(w http.ResponseWriter, r *http.Request) {
 		`^/paragliding/api/ticker/latest$`: apiTickerLatestHandler,
 		`^/paragliding/api/ticker$`:        apiTickerHandler,
 		`^/paragliding/api/ticker/\d{1,2}\.\d{1,2}\.\d{4} \d{1,2}:\d{1,2}:\d{1,2}.\d{1,3}$`: apiTickerTimestampHandler,
+		`^/paragliding/api/webhook/new_track$`:                                              apiWebhookNewTrackHandler,
+		`^/paragliding/admin/api/tracks_count$`:                                             adminAPITrackCountHandler,
+		`^/paragliding/admin/api/tracks$`:                                                   adminAPITracksDelete,
 	}
 
 	result := regexMatches(r.URL.Path, urlMap) // Perform the RegEx check to see if any pattern matches

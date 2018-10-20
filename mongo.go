@@ -188,3 +188,16 @@ func getTrack(client *mongo.Client, url string) igcTrack {
 	return resTrack
 
 }
+
+// Delete all tracks
+func deleteAllTracks(client *mongo.Client) {
+	db := client.Database("paragliding") // `paragliding` Database
+	collection := db.Collection("track") // `track` Collection
+
+	// Delete the tracks
+	collection.DeleteMany(context.Background(), bson.NewDocument())
+
+	// Reset the track counter
+	increaseTrackCounter(int32(0), db)
+
+}
