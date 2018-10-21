@@ -16,14 +16,14 @@ import (
 
 // URLTrack - Keep track of the url used for adding the igc file
 type igcTrack struct {
-	TrackURL        string
-	TrackName       string
-	TimeRecorded    time.Time
-	TrackDate       time.Time
-	TrackPilot      string
-	TrackGliderType string
-	TrackGliderID   string
-	TrackPoints     []igc.Point
+	TrackURL           string
+	TrackName          string
+	TimeRecorded       time.Time
+	TrackDate          time.Time
+	TrackPilot         string
+	TrackGliderType    string
+	TrackGliderID      string
+	TrackTotalDistance string
 }
 
 // Map where the igcFiles are in-memory stored
@@ -60,14 +60,16 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 		db := conn.Database("paragliding")  // `paragliding` database
 		trackColl := db.Collection("track") // `track` collection
 
-		id := getTrackCounter(db)
+		id := getCounter(db, "trackCounter")
 
 		// Check if track is already in the database
 		if !urlInMongo(data["url"], trackColl) { // If it is not, we can add it
 
+			totDist := calculateTotalDistance(track.Points)
+
 			// The info which needs to be saved in the database
 			trackWrite := igcTrack{TrackURL: data["url"], TrackName: "igc" + strconv.Itoa(id), TimeRecorded: t,
-				TrackDate: track.Date, TrackPilot: track.Pilot, TrackGliderType: track.GliderType, TrackGliderID: track.GliderID, TrackPoints: track.Points}
+				TrackDate: track.Date, TrackPilot: track.Pilot, TrackGliderType: track.GliderType, TrackGliderID: track.GliderID, TrackTotalDistance: totDist}
 			// Insert it in the database
 			_, err = trackColl.InsertOne(context.Background(), trackWrite)
 			if err != nil {
@@ -76,7 +78,7 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Increase the counter stored in the database
-			increaseTrackCounter(int32(id), db)
+			increaseCounter(int32(id), db, "trackCounter")
 		}
 
 		resultTrackName := trackNameFromURL(data["url"], trackColl)
@@ -134,7 +136,7 @@ func apiIgcIDHandler(w http.ResponseWriter, r *http.Request) {
 			response += `"pilot": "` + igcTrack.TrackPilot + `",`
 			response += `"glider": "` + igcTrack.TrackGliderType + `",`
 			response += `"glider_id": "` + igcTrack.TrackGliderID + `",`
-			response += `"track_length": "` + calculateTotalDistance(igcTrack.TrackPoints) + `",`
+			response += `"track_length": "` + igcTrack.TrackTotalDistance + `",`
 			response += `"track_src_url": "` + igcTrack.TrackURL + `"`
 			response += gmlCB
 
@@ -166,7 +168,7 @@ func apiIgcIDFieldHandler(w http.ResponseWriter, r *http.Request) {
 				"pilot":         igcTrack.TrackPilot,
 				"glider":        igcTrack.TrackGliderType,
 				"glider_id":     igcTrack.TrackGliderID,
-				"track_length":  calculateTotalDistance(igcTrack.TrackPoints),
+				"track_length":  igcTrack.TrackTotalDistance,
 				"H_date":        igcTrack.TrackDate.String(),
 				"track_src_url": igcTrack.TrackURL,
 			}

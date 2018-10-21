@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"strconv"
 
 	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/bson/objectid"
@@ -15,8 +16,9 @@ type ObjectID [12]byte
 
 // Counter struct
 type Counter struct {
-	ID      objectid.ObjectID `bson:"_id"`
-	Counter int               `bson:"counter"`
+	ID             objectid.ObjectID `bson:"_id"`
+	TrackCounter   int               `bson:"trackCounter"`
+	WebhookCounter int               `bson:"webhookCounter"`
 }
 
 func mongoConnect() *mongo.Client {
@@ -83,7 +85,7 @@ func trackNameFromURL(url string, trackColl *mongo.Collection) string {
 }
 
 // Get track counter from DB
-func getTrackCounter(db *mongo.Database) int {
+func getCounter(db *mongo.Database, whichCounter string) int {
 	counter := db.Collection("counter") // `counter` Collection
 
 	cursor, err := counter.Find(context.Background(), nil)
@@ -102,11 +104,16 @@ func getTrackCounter(db *mongo.Database) int {
 			log.Fatal(err)
 		}
 	}
-	return resCounter.Counter
+	if whichCounter == "trackCounter" {
+		return resCounter.TrackCounter
+	} else if whichCounter == "webhookCounter" {
+		return resCounter.WebhookCounter
+	}
+	return -1
 }
 
 // Increase the track counter
-func increaseTrackCounter(cnt int32, db *mongo.Database) {
+func increaseCounter(cnt int32, db *mongo.Database, whichCounter string) {
 	collection := db.Collection("counter") // `counter` Collection
 
 	// This is the way to update the counter field in the document
@@ -114,7 +121,7 @@ func increaseTrackCounter(cnt int32, db *mongo.Database) {
 	_, err := collection.UpdateOne(context.Background(), nil,
 		bson.NewDocument(
 			bson.EC.SubDocumentFromElements("$set",
-				bson.EC.Int32("counter", cnt+1), // Increase the counter by one
+				bson.EC.Int32(whichCounter, cnt+1), // Increase the counter by one
 			),
 		),
 	)
@@ -198,7 +205,7 @@ func deleteAllTracks(client *mongo.Client) {
 	collection.DeleteMany(context.Background(), bson.NewDocument())
 
 	// Reset the track counter
-	increaseTrackCounter(int32(0), db)
+	increaseCounter(int32(0), db, "trackCounter")
 
 }
 
@@ -232,16 +239,23 @@ func insertUpdateWebhook(data map[string]interface{}) {
 	// If it is nil, it means we can add the webhook
 	if paraglide["webhookURL"] == nil {
 
+		// Check the counter of webhooks
+		whCounter := getCounter(db, "webhookCounter")
+
 		// Insert webhook
 		_, err := coll.InsertOne(context.Background(),
 			bson.NewDocument(
+				bson.EC.String("webhookID", "webhook"+strconv.Itoa(whCounter)),
 				bson.EC.String("webhookURL", data["webhookURL"].(string)),
-				bson.EC.Int32("minTriggerValue", int32(data["minTriggerValue"].(int))),
+				bson.EC.Int32("minTriggerValue", int32(data["minTriggerValue"].(float64))),
 			))
 
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		// Increase webhook counter number
+		increaseCounter(int32(whCounter), db, "webhookCounter")
 
 		// If the webhook exists, just update it
 	} else {
