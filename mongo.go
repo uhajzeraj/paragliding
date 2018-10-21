@@ -201,3 +201,63 @@ func deleteAllTracks(client *mongo.Client) {
 	increaseTrackCounter(int32(0), db)
 
 }
+
+// Insert or Update the webhook
+func insertUpdateWebhook(data map[string]interface{}) {
+
+	conn := mongoConnect()
+	db := conn.Database("paragliding") // `paragliding` Database
+	coll := db.Collection("webhook")   // `webhook` Collection
+
+	// Check if Webhook exists
+	cursor, err := coll.Find(context.Background(),
+		bson.NewDocument(bson.EC.String("webhookURL", data["webhookURL"].(string))))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 'Close' the cursor
+	defer cursor.Close(context.Background())
+
+	var paraglide map[string]interface{}
+
+	// Point the cursor at whatever is found
+	for cursor.Next(context.Background()) {
+		err = cursor.Decode(&paraglide)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// If it is nil, it means we can add the webhook
+	if paraglide["webhookURL"] == nil {
+
+		// Insert webhook
+		_, err := coll.InsertOne(context.Background(),
+			bson.NewDocument(
+				bson.EC.String("webhookURL", data["webhookURL"].(string)),
+				bson.EC.Int32("minTriggerValue", int32(data["minTriggerValue"].(int))),
+			))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// If the webhook exists, just update it
+	} else {
+
+		_, err := coll.UpdateOne(context.Background(),
+			bson.NewDocument(
+				bson.EC.String("webhookURL", data["webhookURL"].(string)),
+			),
+			bson.NewDocument(
+				bson.EC.SubDocumentFromElements("$set",
+					bson.EC.Int32("minTriggerValue", int32(data["minTriggerValue"].(float64))),
+				),
+			),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
