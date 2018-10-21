@@ -27,6 +27,7 @@ func urlRouter(w http.ResponseWriter, r *http.Request) {
 		`^/paragliding/api/ticker$`:        apiTickerHandler,
 		`^/paragliding/api/ticker/\d{1,2}\.\d{1,2}\.\d{4} \d{1,2}:\d{1,2}:\d{1,2}.\d{1,3}$`: apiTickerTimestampHandler,
 		`^/paragliding/api/webhook/new_track$`:                                              apiWebhookNewTrackHandler,
+		`^/paragliding/api/webhook/new_track/webhook\d{1,3}$`:                               apiWebhookNewTrackWebhookIDHandler,
 		`^/paragliding/admin/api/tracks_count$`:                                             adminAPITrackCountHandler,
 		`^/paragliding/admin/api/tracks$`:                                                   adminAPITracksDelete,
 	}

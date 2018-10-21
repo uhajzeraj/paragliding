@@ -21,6 +21,14 @@ type Counter struct {
 	WebhookCounter int               `bson:"webhookCounter"`
 }
 
+// Webhook struct
+type Webhook struct {
+	ID              objectid.ObjectID `bson:"_id"`
+	WebhookID       string            `bson:"webhookID"`
+	WebhookURL      string            `bson:"webhookURL"`
+	MinTriggerValue int               `bson:"minTriggerValue"`
+}
+
 func mongoConnect() *mongo.Client {
 	// Connect to MongoDB
 	conn, err := mongo.Connect(context.Background(), "mongodb://localhost:27017", nil)
@@ -196,6 +204,31 @@ func getTrack(client *mongo.Client, url string) igcTrack {
 
 }
 
+// Get webhook
+func getWebhook(client *mongo.Client, webhookID string) Webhook {
+	db := client.Database("paragliding")   // `paragliding` Database
+	collection := db.Collection("webhook") // `webhook` Collection
+
+	cursor, err := collection.Find(context.Background(),
+		bson.NewDocument(bson.EC.String("webhookID", webhookID)))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resWebhook := Webhook{}
+
+	for cursor.Next(context.Background()) {
+		err := cursor.Decode(&resWebhook)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return resWebhook
+
+}
+
 // Delete all tracks
 func deleteAllTracks(client *mongo.Client) {
 	db := client.Database("paragliding") // `paragliding` Database
@@ -210,7 +243,7 @@ func deleteAllTracks(client *mongo.Client) {
 }
 
 // Insert or Update the webhook
-func insertUpdateWebhook(data map[string]interface{}) {
+func insertUpdateWebhook(data map[string]interface{}) string {
 
 	conn := mongoConnect()
 	db := conn.Database("paragliding") // `paragliding` Database
@@ -236,16 +269,18 @@ func insertUpdateWebhook(data map[string]interface{}) {
 		}
 	}
 
+	// Check the counter of webhook
+	whCounter := getCounter(db, "webhookCounter")
+
+	webhookName := "webhook" + strconv.Itoa(whCounter)
+
 	// If it is nil, it means we can add the webhook
 	if paraglide["webhookURL"] == nil {
-
-		// Check the counter of webhooks
-		whCounter := getCounter(db, "webhookCounter")
 
 		// Insert webhook
 		_, err := coll.InsertOne(context.Background(),
 			bson.NewDocument(
-				bson.EC.String("webhookID", "webhook"+strconv.Itoa(whCounter)),
+				bson.EC.String("webhookID", webhookName),
 				bson.EC.String("webhookURL", data["webhookURL"].(string)),
 				bson.EC.Int32("minTriggerValue", int32(data["minTriggerValue"].(float64))),
 			))
@@ -257,8 +292,7 @@ func insertUpdateWebhook(data map[string]interface{}) {
 		// Increase webhook counter number
 		increaseCounter(int32(whCounter), db, "webhookCounter")
 
-		// If the webhook exists, just update it
-	} else {
+	} else { // If the webhook exists, just update it
 
 		_, err := coll.UpdateOne(context.Background(),
 			bson.NewDocument(
@@ -273,5 +307,12 @@ func insertUpdateWebhook(data map[string]interface{}) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		// WebhookID is different in this case
+		webhookName = paraglide["webhookID"].(string)
+
 	}
+
+	// Return webhookID
+	return webhookName
 }

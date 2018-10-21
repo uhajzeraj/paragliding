@@ -2,7 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 // // Webhook - Handle the decoded JSON body from the POST request
@@ -12,6 +15,7 @@ import (
 // 	WebhookID       string `json:"webhook_id"`
 // }
 
+// POST /api/webhook/new_track
 func apiWebhookNewTrackHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost { // The method has to be POST
 		var data map[string]interface{} // Save POST body (which is JSON) in the map
@@ -33,7 +37,38 @@ func apiWebhookNewTrackHandler(w http.ResponseWriter, r *http.Request) {
 			data["minTriggerValue"] = 1
 		}
 
-		insertUpdateWebhook(data)
+		webhookID := insertUpdateWebhook(data)
+
+		// Print the webhookID
+		fmt.Fprintln(w, webhookID)
+
+	} else {
+		w.WriteHeader(http.StatusNotFound) // 404 Not Found
+	}
+}
+
+// GET /api/webhook/new_track/<webhook_id>
+func apiWebhookNewTrackWebhookIDHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet { // The method has to be GET
+
+		pathArray := strings.Split(r.URL.Path, "/") // split the URL Path into chunks, whenever there's a "/"
+		webhookID := pathArray[len(pathArray)-1]    // The part after the last "/", is the webhook_id
+
+		webhook := getWebhook(mongoConnect(), webhookID)
+
+		if webhook.WebhookID != "" { // Check whether the name is different from an empty string
+
+			w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
+
+			response := gmlOB
+			response += `"webhookURL": "` + webhook.WebhookURL + `",`
+			response += `"minTriggerValue": ` + strconv.Itoa(webhook.MinTriggerValue)
+			response += gmlCB
+
+			fmt.Fprintln(w, response)
+		} else {
+			w.WriteHeader(http.StatusNotFound) // If it isn't, send a 404 Not Found status
+		}
 
 	} else {
 		w.WriteHeader(http.StatusNotFound) // 404 Not Found
