@@ -229,6 +229,19 @@ func getWebhook(client *mongo.Client, webhookID string) Webhook {
 
 }
 
+// Delete webhook
+func deleteWebhook(client *mongo.Client, webhookID string) {
+	db := client.Database("paragliding")   // `paragliding` Database
+	collection := db.Collection("webhook") // `webhook` Collection
+
+	// Delete the webhook
+	collection.DeleteOne(
+		context.Background(), bson.NewDocument(
+			bson.EC.String("webhookID", webhookID),
+		),
+	)
+}
+
 // Delete all tracks
 func deleteAllTracks(client *mongo.Client) {
 	db := client.Database("paragliding") // `paragliding` Database

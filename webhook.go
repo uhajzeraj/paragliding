@@ -47,9 +47,12 @@ func apiWebhookNewTrackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GET /api/webhook/new_track/<webhook_id>
+// DELETE/GET /api/webhook/new_track/<webhook_id>
 func apiWebhookNewTrackWebhookIDHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet { // The method has to be GET
+	if r.Method == http.MethodGet || r.Method == http.MethodDelete { // GET or DELETE method
+
+		// The methods are almost the same
+		// DELETE has to additionally delete the webhook
 
 		pathArray := strings.Split(r.URL.Path, "/") // split the URL Path into chunks, whenever there's a "/"
 		webhookID := pathArray[len(pathArray)-1]    // The part after the last "/", is the webhook_id
@@ -70,7 +73,12 @@ func apiWebhookNewTrackWebhookIDHandler(w http.ResponseWriter, r *http.Request) 
 			w.WriteHeader(http.StatusNotFound) // If it isn't, send a 404 Not Found status
 		}
 
-	} else {
+		// If the method was DELETE, delete the webhook
+		if r.Method == http.MethodDelete {
+			deleteWebhook(mongoConnect(), webhookID)
+		}
+
+	} else { // Method is something different
 		w.WriteHeader(http.StatusNotFound) // 404 Not Found
 	}
 }
