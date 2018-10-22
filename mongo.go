@@ -30,7 +30,7 @@ type Webhook struct {
 
 func mongoConnect() *mongo.Client {
 	// Connect to MongoDB
-	conn, err := mongo.Connect(context.Background(), "mongodb://localhost:27017", nil)
+	conn, err := mongo.Connect(context.Background(), "mongodb://uranh:connecttome123@ds137913.mlab.com:37913/paragliding", nil)
 	if err != nil {
 		log.Fatal(err)
 		return nil
