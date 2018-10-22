@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -43,5 +44,5 @@ func urlRouter(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", urlRouter) // Handle all the request via the urlRouter function
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }
