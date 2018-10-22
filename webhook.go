@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // // Webhook - Handle the decoded JSON body from the POST request
@@ -80,5 +82,61 @@ func apiWebhookNewTrackWebhookIDHandler(w http.ResponseWriter, r *http.Request) 
 
 	} else { // Method is something different
 		w.WriteHeader(http.StatusNotFound) // 404 Not Found
+	}
+}
+
+// Trigger the webhook(s) if new tracks were added
+func triggerWebhook() {
+
+	conn := mongoConnect()
+	resultWebhooks := getAllWebhooks(conn)
+	trackCounter := getCounter(conn.Database("paragliding"), "trackCounter") - 1
+
+	for _, val := range resultWebhooks {
+
+		// Only check for new tracks
+		if trackCounter%val.MinTriggerValue != 0 {
+			continue
+		}
+
+		processStart := time.Now() // Track when the process started
+
+		url := val.WebhookURL
+
+		// returnTracks returns the last element and the n number of tracks
+		trackString, _ := returnTracks(trackCounter)
+
+		trackArray := strings.Split(trackString, `,`)
+
+		if len(trackArray) < val.MinTriggerValue {
+			trackArray = trackArray[0:len(trackArray)]
+		} else {
+			trackArray = trackArray[trackCounter-val.MinTriggerValue : len(trackArray)]
+		}
+
+		trackString = strings.Join(trackArray, `,`)
+		// Add \ to " in trackArray
+		trackString = strings.Replace(trackString, `"`, `\"`, -1)
+
+		timestamps := tickerTimestamps("")
+
+		latestTS := timestamps.latestTimestamp.String()
+		jsonPayload := gmlOB
+		jsonPayload += `"username": "Track Added",`
+		jsonPayload += `"content": "` + latestTS + `\n`
+		jsonPayload += `[` + trackString + `]\n`
+		jsonPayload += strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms"`
+		jsonPayload += gmlCB
+
+		var jsonStr = []byte(jsonPayload)
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		req.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
 	}
 }

@@ -12,7 +12,7 @@ func adminAPITrackCountHandler(w http.ResponseWriter, r *http.Request) {
 		conn := mongoConnect()
 
 		// Get the tracks
-		trackCount := len(getAllTracks(conn, false))
+		trackCount := len(getAllTracks(conn))
 
 		fmt.Fprintln(w, trackCount)
 	} else {
@@ -27,7 +27,7 @@ func adminAPITracksDelete(w http.ResponseWriter, r *http.Request) {
 		conn := mongoConnect()
 
 		// Get the tracks
-		trackCount := len(getAllTracks(conn, false))
+		trackCount := len(getAllTracks(conn))
 
 		// Delete all the tracks
 		deleteAllTracks(conn)

@@ -171,7 +171,7 @@ func oldestNewerTimestamp(inputTS string, resultTracks []igcTrack) time.Time {
 
 func tickerTimestamps(inputTS string) Timestamps {
 	conn := mongoConnect()
-	resultTracks := getAllTracks(conn, false)
+	resultTracks := getAllTracks(conn)
 
 	timestamps := Timestamps{}
 
@@ -190,7 +190,7 @@ func returnTracks(n int) (string, time.Time) {
 
 	conn := mongoConnect()
 
-	resultTracks := getAllTracks(conn, false)
+	resultTracks := getAllTracks(conn)
 
 	for key, val := range resultTracks { // Go through the slice
 		response += `"` + val.TrackName + `",`

@@ -79,6 +79,9 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 
 			// Increase the counter stored in the database
 			increaseCounter(int32(id), db, "trackCounter")
+
+			// Trigger the webhook
+			triggerWebhook()
 		}
 
 		resultTrackName := trackNameFromURL(data["url"], trackColl)
@@ -98,7 +101,7 @@ func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 		// Connect to MongoDB
 		conn := mongoConnect()
 
-		igcTracks := getAllTracks(conn, false)
+		igcTracks := getAllTracks(conn)
 
 		response := "["
 		for i := range igcTracks { // Get all the IDs of .igc files stored in the igcFiles map
