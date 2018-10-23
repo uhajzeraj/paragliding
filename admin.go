@@ -37,3 +37,9 @@ func adminAPITracksDelete(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound) // 404 Not Found
 	}
 }
+
+func adminAPIWebhookTrigger(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet { // GET request
+		triggerWebhook()
+	}
+}

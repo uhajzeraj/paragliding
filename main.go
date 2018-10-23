@@ -31,6 +31,9 @@ func urlRouter(w http.ResponseWriter, r *http.Request) {
 		`^/paragliding/api/webhook/new_track/webhook\d{1,3}$`:                               apiWebhookNewTrackWebhookIDHandler,
 		`^/paragliding/admin/api/tracks_count$`:                                             adminAPITrackCountHandler,
 		`^/paragliding/admin/api/tracks$`:                                                   adminAPITracksDelete,
+
+		// This is a special case used to trigger the webhooks
+		`^/paragliding/admin/api/webhook$`: adminAPIWebhookTrigger,
 	}
 
 	result := regexMatches(r.URL.Path, urlMap) // Perform the RegEx check to see if any pattern matches
