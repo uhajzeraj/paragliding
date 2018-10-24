@@ -166,7 +166,7 @@ func triggerTimedWebhook() {
 			latestTS := timestamps.latestTimestamp.String()
 
 			jsonPayload := gmlOB
-			jsonPayload += `"username": "Track Added",`
+			jsonPayload += `"username": "Auto Timer",`
 			jsonPayload += `"content": "Latest added track at ` + latestTS + `\n`
 			jsonPayload += `New tracks are ` + trackString + `\n`
 			jsonPayload += `The request took ` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms to process"`
