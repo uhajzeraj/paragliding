@@ -40,6 +40,6 @@ func adminAPITracksDelete(w http.ResponseWriter, r *http.Request) {
 
 func adminAPIWebhookTrigger(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet { // GET request
-		triggerWebhook()
+		triggerTimedWebhook()
 	}
 }

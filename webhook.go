@@ -10,12 +10,7 @@ import (
 	"time"
 )
 
-// // Webhook - Handle the decoded JSON body from the POST request
-// type Webhook struct {
-// 	WebhookURL      string `json:"webhook_url"`
-// 	MinTriggerValue int    `json:"min_trigger_value"`
-// 	WebhookID       string `json:"webhook_id"`
-// }
+var latestTrackCounter = 1
 
 // POST /api/webhook/new_track
 func apiWebhookNewTrackHandler(w http.ResponseWriter, r *http.Request) {
@@ -123,9 +118,9 @@ func triggerWebhook() {
 		latestTS := timestamps.latestTimestamp.String()
 		jsonPayload := gmlOB
 		jsonPayload += `"username": "Track Added",`
-		jsonPayload += `"content": "` + latestTS + `\n`
-		jsonPayload += `[` + trackString + `]\n`
-		jsonPayload += strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms"`
+		jsonPayload += `"content": "Latest added track at ` + latestTS + `\n`
+		jsonPayload += `New tracks are ` + trackString + `\n`
+		jsonPayload += `The request took ` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms to process"`
 		jsonPayload += gmlCB
 
 		var jsonStr = []byte(jsonPayload)
@@ -139,4 +134,57 @@ func triggerWebhook() {
 		}
 		defer resp.Body.Close()
 	}
+}
+
+// Trigger the webhook(s) if new tracks were added
+func triggerTimedWebhook() {
+
+	conn := mongoConnect()
+	trackCounter := getCounter(conn.Database("paragliding"), "trackCounter")
+
+	// Check if the track counter has changed
+	if latestTrackCounter != trackCounter {
+
+		resultWebhooks := getAllWebhooks(conn)
+		allTracks := getAllTracks(conn)
+
+		allTracks = allTracks[latestTrackCounter-1:]
+
+		for _, val := range resultWebhooks {
+
+			processStart := time.Now() // Track when the process started
+
+			url := val.WebhookURL
+
+			trackString := ""
+
+			for _, val := range allTracks {
+				trackString += val.TrackName + " "
+			}
+
+			timestamps := tickerTimestamps("")
+			latestTS := timestamps.latestTimestamp.String()
+
+			jsonPayload := gmlOB
+			jsonPayload += `"username": "Track Added",`
+			jsonPayload += `"content": "Latest added track at ` + latestTS + `\n`
+			jsonPayload += `New tracks are ` + trackString + `\n`
+			jsonPayload += `The request took ` + strconv.FormatFloat(float64(time.Since(processStart))/float64(time.Millisecond), 'f', 2, 64) + `ms to process"`
+			jsonPayload += gmlCB
+
+			var jsonStr = []byte(jsonPayload)
+			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+			req.Header.Set("Content-Type", "application/json")
+
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				panic(err)
+			}
+			defer resp.Body.Close()
+		}
+
+		latestTrackCounter = trackCounter
+	}
+
 }
