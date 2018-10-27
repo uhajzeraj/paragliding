@@ -125,6 +125,9 @@ func triggerWebhook() {
 
 		var jsonStr = []byte(jsonPayload)
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+		if err != nil {
+			return
+		}
 		req.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{}
@@ -174,6 +177,9 @@ func triggerTimedWebhook() {
 
 			var jsonStr = []byte(jsonPayload)
 			req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+			if err != nil {
+				return
+			}
 			req.Header.Set("Content-Type", "application/json")
 
 			client := &http.Client{}

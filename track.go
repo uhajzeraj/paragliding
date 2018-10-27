@@ -26,14 +26,6 @@ type igcTrack struct {
 	TrackTotalDistance string
 }
 
-// Map where the igcFiles are in-memory stored
-// var igcTracks []igcTrack // slice of igcTrack
-
-//
-//
-//
-// Track Handlers
-
 // POST/GET /api/track
 func apiIgcHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -129,18 +121,18 @@ func apiIgcIDHandler(w http.ResponseWriter, r *http.Request) {
 
 		conn := mongoConnect()
 
-		igcTrack := getTrack(conn, urlTrackName)
+		resIgcTrack := getTrack(conn, urlTrackName)
 
-		if igcTrack.TrackName != "" { // Check whether the name is different from an empty string
+		if resIgcTrack.TrackName != "" { // Check whether the name is different from an empty string
 			w.Header().Set("Content-Type", "application/json") // Set response content-type to JSON
 
 			response := gmlOB
-			response += `"H_date": "` + igcTrack.TrackDate.String() + `",`
-			response += `"pilot": "` + igcTrack.TrackPilot + `",`
-			response += `"glider": "` + igcTrack.TrackGliderType + `",`
-			response += `"glider_id": "` + igcTrack.TrackGliderID + `",`
-			response += `"track_length": "` + igcTrack.TrackTotalDistance + `",`
-			response += `"track_src_url": "` + igcTrack.TrackURL + `"`
+			response += `"H_date": "` + resIgcTrack.TrackDate.String() + `",`
+			response += `"pilot": "` + resIgcTrack.TrackPilot + `",`
+			response += `"glider": "` + resIgcTrack.TrackGliderType + `",`
+			response += `"glider_id": "` + resIgcTrack.TrackGliderID + `",`
+			response += `"track_length": "` + resIgcTrack.TrackTotalDistance + `",`
+			response += `"track_src_url": "` + resIgcTrack.TrackURL + `"`
 			response += gmlCB
 
 			fmt.Fprintf(w, response)
@@ -163,17 +155,17 @@ func apiIgcIDFieldHandler(w http.ResponseWriter, r *http.Request) {
 
 		conn := mongoConnect()
 
-		igcTrack := getTrack(conn, uniqueID)
+		resIgcTrack := getTrack(conn, uniqueID)
 
-		if igcTrack.TrackName != "" { // Check whether the name is different from an empty string
+		if resIgcTrack.TrackName != "" { // Check whether the name is different from an empty string
 
 			something := map[string]string{ // Map the field to one of the Track struct attributes in the igcFiles slice
-				"pilot":         igcTrack.TrackPilot,
-				"glider":        igcTrack.TrackGliderType,
-				"glider_id":     igcTrack.TrackGliderID,
-				"track_length":  igcTrack.TrackTotalDistance,
-				"H_date":        igcTrack.TrackDate.String(),
-				"track_src_url": igcTrack.TrackURL,
+				"pilot":         resIgcTrack.TrackPilot,
+				"glider":        resIgcTrack.TrackGliderType,
+				"glider_id":     resIgcTrack.TrackGliderID,
+				"track_length":  resIgcTrack.TrackTotalDistance,
+				"H_date":        resIgcTrack.TrackDate.String(),
+				"track_src_url": resIgcTrack.TrackURL,
 			}
 
 			response := something[field] // This will work because the RegEx checks whether the name is written correctly
